@@ -3,242 +3,294 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EcoCook - Assistant de Cuisson Éco-Responsable</title>
+    <title>ProteinWatts - Cuisson Éco-Protéines</title>
+    <link rel="manifest" href="manifest.json">
     <style>
         :root {
             --primary: #2e7d32;
             --primary-dark: #1b5e20;
-            --bg: #f4f6f8;
-            --card: #ffffff;
-            --text: #2c3e50;
-            --red: #e53935;
+            --red: #c0392b;
+            --bg: #f4f7f5;
+            --card-bg: #ffffff;
+            --text: #263238;
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
             margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
+            padding: 15px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
         }
 
         .container {
-            background-color: var(--card);
-            max-width: 480px;
             width: 100%;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            max-width: 500px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
 
         h1 {
-            margin-top: 0;
-            color: var(--primary);
-            font-size: 1.5rem;
+            margin: 0 0 10px;
+            font-size: 24px;
             text-align: center;
-        }je
+            color: var(--primary-dark);
+        }
+
+        .about-link {
+            display: block;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary);
+            font-weight: bold;
+            text-decoration: none;
+            padding: 6px;
+            background: #eef7ee;
+            border-radius: 8px;
+        }
 
         .group {
-            margin-bottom: 16px;
+            margin-bottom: 15px;
         }
 
         label {
             display: block;
-            font-weight: 600;
-            font-size: 0.9rem;
             margin-bottom: 6px;
+            font-weight: bold;
+            font-size: 14px;
         }
 
         select, input {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            box-sizing: border-box;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #fff;
         }
 
-        .row-flex {
-            display: flex;
-            gap: 12px;
-        }
-
-        .row-flex > div {
-            flex: 1;
-        }
-
-        .box {
-            background: #eef7ee;
-            border-left: 4px solid var(--primary);
-            padding: 12px 16px;
-            border-radius: 4px;
-            margin-top: 20px;
-            font-size: 0.9rem;
-        }
-
-        .step-list {
-            padding-left: 20px;
-            margin: 8px 0;
-        }
-
-        .step-list li {
-            margin-bottom: 6px;
-        }
-
-        .eco-badge {
-            background: #d4edda;
-            color: #155724;
-            padding: 8px;
-            border-radius: 4px;
+        .timer-display {
+            font-size: 48px;
             font-weight: bold;
             text-align: center;
-            margin-top: 10px;
-        }
-
-        .timer {
-            font-size: 3rem;
-            font-weight: bold;
-            text-align: center;
-            margin: 20px 0 10px 0;
-            letter-spacing: 2px;
+            margin: 20px 0 10px;
             color: var(--primary-dark);
+            font-family: monospace;
         }
 
-        button {
+        .btn {
+            display: block;
             width: 100%;
             padding: 14px;
-            background-color: var(--primary);
-            color: white;
             border: none;
-            border-radius: 6px;
-            font-size: 1.1rem;
+            border-radius: 10px;
+            background: var(--primary);
+            color: white;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.2s;
         }
 
-        button:hover {
-            background-color: var(--primary-dark);
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .steps-box {
+            background: #f8f9fa;
+            border-left: 4px solid var(--primary);
+            padding: 12px 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .steps-box ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .steps-box li {
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+            background: #f1f8e9;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card div:first-child {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .stat-card div:last-child {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+
+        .reset-btn {
+            display: block;
+            margin: 15px auto 0;
+            background: none;
+            border: none;
+            color: #777;
+            font-size: 12px;
+            text-decoration: underline;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🌱 EcoCook</h1>
+    <h1>🥩 ProteinWatts</h1>
     
+    <!-- Lien direct vers les explications scientifiques et l'usage -->
+    <a href="readme.html" class="about-link">
+        📖 À propos de ProteinWatts
+    </a>
+
+    <!-- Sélection de la catégorie principale -->
     <div class="group">
         <label for="category">Type d'aliment :</label>
         <select id="category" onchange="toggleInputs()">
             <option value="oeufs">🥚 Œufs (Coque, Mollet, Dur)</option>
             <option value="viandes">🥩 Viandes (Volaille, Bœuf, Porc...)</option>
+            <option value="poissons">🐟 Poissons & Crustacés</option>
         </select>
     </div>
 
-    <!-- Options Œufs -->
+    <!-- Options spécifiques : Œufs -->
     <div id="oeufs-options" class="group">
         <label for="cuissonOeuf">Cuisson désirée :</label>
         <select id="cuissonOeuf" onchange="calculer()">
-            <option value="coque">🥚 À la coque (jaune coulant)</option>
-            <option value="mollet">🍳 Mollet (jaune crémeux)</option>
-            <option value="dur">🟡 Dur (jaune ferme)</option>
+            <option value="coque">🥚 À la coque (Jaune très coulant)</option>
+            <option value="mollet">🍳 Mollet (Jaune crémeux)</option>
+            <option value="dur">🥚 Dur (Jaune ferme mais non sec)</option>
         </select>
-        <label for="tailleOeuf" style="margin-top: 8px;">Calibre des œufs :</label>
+
+        <label for="tailleOeuf" style="margin-top: 10px;">Calibre de l'œuf :</label>
         <select id="tailleOeuf" onchange="calculer()">
-            <option value="S">S - Petit (~50g)</option>
-            <option value="M" selected>M - Moyen (~60g)</option>
-            <option value="L">L - Grand (~68g)</option>
-            <option value="XL">XL - Très grand (~75g)</option>
+            <option value="S">S (&lt; 53g)</option>
+            <option value="M" selected>M (53g - 63g)</option>
+            <option value="L">L (63g - 73g)</option>
+            <option value="XL">XL (&gt; 73g)</option>
         </select>
     </div>
 
-    <!-- Options Viandes -->
+    <!-- Options spécifiques : Viandes -->
     <div id="viandes-options" class="group" style="display:none;">
-        <label for="typeViande">Espèce :</label>
+        <label for="typeViande">Type de viande :</label>
         <select id="typeViande" onchange="calculer()">
-            <option value="volaille">🐔 Volaille</option>
-            <option value="boeuf">🐂 Bœuf</option>
-            <option value="porc">🐖 Porc</option>
-            <option value="mouton">🐑 Mouton / Agneau</option>
-            <option value="gibier">🦌 Gibier</option>
-           <option value="viandes">🥩 Viandes (Volaille, Bœuf, Porc...)</option>
-           <option value="poissons">🐟 Poissons & Crustacés</option>
+            <option value="volaille">Poulet / Dinde (Cuisson complète requise)</option>
+            <option value="boeuf">Bœuf / Canard (Rosé / Saignant possible)</option>
+            <option value="porc">Porc / Veau (À cœur)</option>
         </select>
 
-        <label for="cuissonViande" style="margin-top: 8px;">Appoint de cuisson :</label>
+        <label for="cuissonViande" style="margin-top: 10px;">Appoint de cuisson :</label>
         <select id="cuissonViande" onchange="calculer()">
-            <option value="apoint">À point / Rosé / Saignant</option>
+            <option value="normal">Standard / Rosé</option>
             <option value="biencuit">Bien cuit / À cœur</option>
         </select>
 
-        <label for="methodeViande" style="margin-top: 8px;">Technique de cuisson :</label>
+        <label for="methodeViande" style="margin-top: 10px;">Mode de préparation :</label>
         <select id="methodeViande" onchange="calculer()">
-            <option value="poele">🍳 Poêle antiadhésive (Sans matière grasse + couvercle)</option>
-            <option value="sauce">🥘 En sauce / Ragoût (Inertie thermique passive)</option>
-            <option value="microonde">⚡ Micro-ondes (Basse puissance à la vapeur)</option>
+            <option value="poele">🍳 Poêle antiadhésive (Étouffée / Feu coupé)</option>
+            <option value="sauce">🍲 En sauce / Cocotte (Mijotage passif)</option>
+            <option value="microonde">⚡ Micro-ondes (Cuisson douce sous cloche)</option>
         </select>
     </div>
-    <!-- Options Poissons -->
+
+    <!-- Options spécifiques : Poissons -->
     <div id="poissons-options" class="group" style="display:none;">
         <label for="typePoisson">Type de poisson / chair :</label>
         <select id="typePoisson" onchange="calculer()">
-            <option value="blanc">🐟 Chair Blanche (Cabillaud, Lieu, Merlan) [Poche très vite]</option>
-            <option value="ferme">🐠 Chair Ferme (Lotte, Espadon, Thon) [Garde sa tenue]</option>
-            <option value="gras">Salmonidés / Chair Grasse (Saumon, Maquereau, Sardine) [Poche parfaitement]</option>
-            <option value="crustaces">🦐 Crustacés & Mollusques (Crevettes, St-Jacques, Encornet) [Flash rapide]</option>
+            <option value="blanc">🐟 Chair Blanche (Cabillaud, Lieu, Merlan)</option>
+            <option value="ferme">🐠 Chair Ferme (Lotte, Espadon, Thon)</option>
+            <option value="gras">🐟 Salmonidés / Chair Grasse (Saumon, Maquereau)</option>
+            <option value="crustaces">🦐 Crustacés & Mollusques (Crevettes, St-Jacques)</option>
         </select>
 
-        <label for="methodePoisson" style="margin-top: 8px;">Mode de cuisson :</label>
+        <label for="methodePoisson" style="margin-top: 10px;">Mode de cuisson :</label>
         <select id="methodePoisson" onchange="calculer()">
             <option value="poele">🍳 Poêle antiadhésive (À couvert / feu coupé)</option>
             <option value="poche">🫕 Poché (Cuisson passive dans l'eau / bouillon)</option>
-            <option value="microonde">⚡ Micro-ondes (Cuisson douce sous cloche / vapeur)</option>
+            <option value="microonde">⚡ Micro-ondes (Cuisson douce sous cloche)</option>
         </select>
     </div>
 
-    <!-- Quantité -->
+    <!-- Entrées communes : Masse / Quantité / Récipient -->
     <div class="group">
         <label id="labelPoids" for="poids">Nombre d'œufs :</label>
-        <input type="number" id="poids" value="2" min="1" oninput="calculer()">
+        <input type="number" id="poids" value="2" min="1" max="2000" oninput="calculer()">
     </div>
 
-    <!-- Ustensile & Énergie -->
     <div class="group">
-        <label for="casserole">Ustensile utilisé :</label>
+        <label for="casserole">Qualité du récipient / Couvercle :</label>
         <select id="casserole" onchange="calculer()">
-            <option value="lourde">Fonte / Fond épais capsulé (Conserve la chaleur)</option>
-            <option value="legere">Inox fin / Aluminium (Perte thermique rapide)</option>
+            <option value="lourde">Récipient lourd / Fond épais (Excellente inertie)</option>
+            <option value="legere">Récipient fin / Inox standard</option>
         </select>
     </div>
 
-    <div class="group row-flex">
-        <div>
-            <label for="tarifKwh">Tarif (€/kWh) :</label>
-            <input type="number" id="tarifKwh" value="0.25" min="0" step="0.01" oninput="calculer()">
+    <!-- Paramètre financier optionnel -->
+    <div class="group">
+        <label for="tarifKwh">Tarif de l'électricité (€/kWh) :</label>
+        <input type="number" id="tarifKwh" value="0.25" step="0.01" oninput="calculer()">
+    </div>
+
+    <!-- Étapes de préparation générées dynamiquement -->
+    <div class="steps-box">
+        <strong>📋 Instructions de cuisson passive :</strong>
+        <ul id="prepSteps"></ul>
+    </div>
+
+    <!-- Informations d'économie calculées -->
+    <div id="infoEau" style="font-size: 14px; margin-bottom: 10px;">
+        💧 Eau minimale recommandée : <strong><span id="eau">0</span> L</strong>
+    </div>
+
+    <!-- Affichage du Minuteur -->
+    <div class="timer-display" id="disp">00:00</div>
+    <button id="btn" class="btn" onclick="toggle()">Démarrer la cuisson</button>
+
+    <!-- Historique des économies accumulées -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div>Énergie</div>
+            <div><span id="totalWh">0</span> Wh</div>
         </div>
-        <div>
-            <label>Économies cumulées <a href="#" onclick="resetTotals();return false;" style="font-size:10px;">(reset)</a></label>
-            <div style="font-size:11px;padding-top:6px;">
-                ⚡<span id="totalWh">0</span> Wh · 💶<span id="totalEur">0.00</span> €<br>🌱<span id="totalCo2">0</span> g CO₂
-            </div>
+        <div class="stat-card">
+            <div>Économie</div>
+            <div><span id="totalEur">0.00</span> €</div>
+        </div>
+        <div class="stat-card">
+            <div>CO₂ évité</div>
+            <div><span id="totalCo2">0</span> g</div>
         </div>
     </div>
 
-    <!-- Résultats et Étapes -->
-    <div class="box">
-        <div id="infoEau"><strong>💧 Eau nécessaire :</strong> <span id="eau">0.00</span> L</div>
-        <div style="margin-top: 8px; font-weight: bold;">Instructions de cuisson écologique :</div>
-        <ol class="step-list" id="prepSteps"></ol>
-        
-        <div class="eco-badge">
-            📈 Économie estimée : ~<span id="ecoWh">0</span> Wh (<span id="ecoEur">0.00</span> €)
-        </div>
-    </div>
+    <!-- Économie estimée pour la session en cours (caché mais lu par JS) -->
+    <span id="ecoWh" style="display:none;">0</span>
+    <span id="ecoEur" style="display:none;">0</span>
+    <span id="infoSel" style="display:none;">0</span>
 
-    <div class="timer" id="disp">00:00</div>
-    <button id="btn" onclick="toggle()">Démarrer la cuisson</button>
+    <button class="reset-btn" onclick="resetTotals()">Réinitialiser le compteur d'économies</button>
 </div>
 
 <script src="app.js"></script>
