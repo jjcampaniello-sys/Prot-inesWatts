@@ -16,7 +16,7 @@ function toggleInputs() {
     
     document.getElementById('oeufs-options').style.display = (cat === 'oeufs') ? 'block' : 'none';
     document.getElementById('viandes-options').style.display = (cat === 'viandes') ? 'block' : 'none';
-document.getElementById('poissons-options').style.display = (cat === 'poissons') ? 'block' : 'none';
+    document.getElementById('poissons-options').style.display = (cat === 'poissons') ? 'block' : 'none';
 
     const labelPoids = document.getElementById('labelPoids');
     const inputPoids = document.getElementById('poids');
@@ -25,8 +25,11 @@ document.getElementById('poissons-options').style.display = (cat === 'poissons')
         labelPoids.innerText = "Nombre d'œufs :";
         if (inputPoids.value > 12) inputPoids.value = 2;
     } else {
-        labelPoids.innerText = "Masse de la viande (grammes) :";
-        if (cat === 'poissons') labelPoids.innerText = "Masse du poisson / crustacés (grammes) :";
+        if (cat === 'poissons') {
+            labelPoids.innerText = "Masse du poisson / crustacés (grammes) :";
+        } else {
+            labelPoids.innerText = "Masse de la viande (grammes) :";
+        }
         if (inputPoids.value < 10) inputPoids.value = 200;
     }
 
@@ -50,20 +53,17 @@ function calculer() {
         const calibre = document.getElementById('tailleOeuf').value;
         const nbOeufs = Math.round(quantite);
 
-        // Optimisation de l'eau : juste assez pour couvrir à mi-hauteur sous couvercle fermé (vapeur)
         volEau = Math.min(1.2, 0.15 + (nbOeufs * 0.04));
 
         let baseTime = configOeufs[typeCuisson].baseMin * 60;
-        let pRef = 60; // Poids moyen M
+        let pRef = 60;
         let pReel = calibresOeufs[calibre];
         
-        // Ajustement selon le ratio de masse (loi de conduction thermique ~ M^(2/3))
         let coefPoids = Math.pow(pReel / pRef, 2/3);
 
         tSeconds = Math.round(baseTime * coefPoids);
         if (cass === 'legere') tSeconds += 20;
 
-        // Économie vs cuisson immergée à ébullition continue (~250Wh -> ~60Wh)
         whSaved = Math.round(180 + (nbOeufs * 5));
 
         stepList.innerHTML += `<li>Mettre seulement <strong>${volEau.toFixed(2)}L d'eau</strong> au fond du récipient.</li>`;
@@ -118,17 +118,17 @@ function calculer() {
             stepList.innerHTML += `<li>Couvrir avec une cloche ou un film étirable perforé.</li>`;
             stepList.innerHTML += `<li>Cuire à <strong>400W-500W maxi</strong> (température douce préservant les nutriments).</li>`;
             stepList.innerHTML += `<li>Laisser reposer 2 minutes au chaud avant de consommer.</li>`;
-            
-        }  else if (cat === 'poissons') {
+        }
+
+    } else if (cat === 'poissons') {
         const typeP = document.getElementById('typePoisson').value;
         const methodeP = document.getElementById('methodePoisson').value;
-        document.getElementById('infoSel').style.display = "none";
 
         if (methodeP === 'poche') {
             volEau = Math.min(2.0, 0.4 + (quantite / 1000) * 0.8);
             document.getElementById('infoEau').style.display = "block";
             
-            let tempsSec = 300; // Base 5 min
+            let tempsSec = 300;
             if (typeP === 'ferme') tempsSec = 480;
             if (typeP === 'crustaces') tempsSec = 180;
             tSeconds = tempsSec;
@@ -163,7 +163,6 @@ function calculer() {
             stepList.innerHTML += `<li>Laisser reposer 1 à 2 minutes sous cloche avant d'ouvrir.</li>`;
         }
     }
-
 
     document.getElementById('eau').innerText = volEau.toFixed(2);
     document.getElementById('ecoWh').innerText = Math.max(0, whSaved);
@@ -253,7 +252,10 @@ function releaseWakeLock() {
 
 function declencherAlerteVocale() {
     const cat = document.getElementById('category').value;
-    let nomAliment = cat === 'oeufs' ? "les œufs" : "la viande";
+    let nomAliment = "votre préparation";
+    if (cat === 'oeufs') nomAliment = "les œufs";
+    else if (cat === 'viandes') nomAliment = "la viande";
+    else if (cat === 'poissons') nomAliment = "le poisson";
 
     try {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
