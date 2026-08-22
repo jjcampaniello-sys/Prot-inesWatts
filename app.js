@@ -1,0 +1,278 @@
+const gCO2ParKwh = 60; // Mix électrique français moyen (~60g/kWh)
+let sessionWh = 0, sessionEur = 0;
+let endTimestamp = null, audioCtx = null;
+let sec = 0, active = false, inter = null, wakeLock = null;
+
+const configOeufs = {
+    coque:  { baseMin: 4.5 },
+    mollet: { baseMin: 6.5 },
+    dur:    { baseMin: 10.0 }
+};
+
+const calibresOeufs = { S: 50, M: 60, L: 68, XL: 75 };
+
+function toggleInputs() {
+    const cat = document.getElementById('category').value;
+    
+    document.getElementById('oeufs-options').style.display = (cat === 'oeufs') ? 'block' : 'none';
+    document.getElementById('viandes-options').style.display = (cat === 'viandes') ? 'block' : 'none';
+
+    const labelPoids = document.getElementById('labelPoids');
+    const inputPoids = document.getElementById('poids');
+
+    if (cat === 'oeufs') {
+        labelPoids.innerText = "Nombre d'œufs :";
+        if (inputPoids.value > 12) inputPoids.value = 2;
+    } else {
+        labelPoids.innerText = "Masse de la viande (grammes) :";
+        if (inputPoids.value < 10) inputPoids.value = 200;
+    }
+
+    resetTimerState();
+    calculer();
+}
+
+function calculer() {
+    const cat = document.getElementById('category').value;
+    const quantite = Math.max(1, parseFloat(document.getElementById('poids').value) || 1);
+    const cass = document.getElementById('casserole').value;
+    const tarifKwh = parseFloat(document.getElementById('tarifKwh').value) || 0.25;
+    const stepList = document.getElementById('prepSteps');
+
+    let volEau = 0, tSeconds = 0, whSaved = 0;
+    stepList.innerHTML = "";
+    document.getElementById('infoEau').style.display = "block";
+
+    if (cat === 'oeufs') {
+        const typeCuisson = document.getElementById('cuissonOeuf').value;
+        const calibre = document.getElementById('tailleOeuf').value;
+        const nbOeufs = Math.round(quantite);
+
+        // Optimisation de l'eau : juste assez pour couvrir à mi-hauteur sous couvercle fermé (vapeur)
+        volEau = Math.min(1.2, 0.15 + (nbOeufs * 0.04));
+
+        let baseTime = configOeufs[typeCuisson].baseMin * 60;
+        let pRef = 60; // Poids moyen M
+        let pReel = calibresOeufs[calibre];
+        
+        // Ajustement selon le ratio de masse (loi de conduction thermique ~ M^(2/3))
+        let coefPoids = Math.pow(pReel / pRef, 2/3);
+
+        tSeconds = Math.round(baseTime * coefPoids);
+        if (cass === 'legere') tSeconds += 20;
+
+        // Économie vs cuisson immergée à ébullition continue (~250Wh -> ~60Wh)
+        whSaved = Math.round(180 + (nbOeufs * 5));
+
+        stepList.innerHTML += `<li>Mettre seulement <strong>${volEau.toFixed(2)}L d'eau</strong> au fond du récipient.</li>`;
+        stepList.innerHTML += `<li>Porter à ébullition rapide sous couvercle.</li>`;
+        stepList.innerHTML += `<li>Plonger les ${nbOeufs} œuf(s) et maintenir le feu <strong>45 secondes</strong>.</li>`;
+        stepList.innerHTML += `<li><strong>COUPEZ LE FEU</strong>, fermez avec un couvercle hermétique (cuisson étouffée/vapeur).</li>`;
+        stepList.innerHTML += `<li>À la fin du temps, plongez les œufs dans l'eau froide pour stopper la cuisson.</li>`;
+
+    } else if (cat === 'viandes') {
+        const typeViande = document.getElementById('typeViande').value;
+        const cuisson = document.getElementById('cuissonViande').value;
+        const methode = document.getElementById('methodeViande').value;
+
+        if (methode === 'poele') {
+            document.getElementById('infoEau').style.display = "none";
+            
+            let tempsSec = (quantite / 100) * (typeViande === 'volaille' || typeViande === 'porc' ? 180 : 130);
+            if (cuisson === 'biencuit') tempsSec *= 1.35;
+            
+            tSeconds = Math.round(tempsSec);
+            whSaved = 110;
+
+            stepList.innerHTML += `<li>Chauffer la poêle antiadhésive à sec à feu moyen (sans huile/beurre).</li>`;
+            stepList.innerHTML += `<li>Saisir la viande 1 minute de chaque côté pour former la croûte protectrice.</li>`;
+            stepList.innerHTML += `<li><strong>COUPEZ LE FEU</strong> et couvrez immédiatement avec un couvercle étanche.</li>`;
+            stepList.innerHTML += `<li>La cuisson se termine doucement grâce à la vapeur et la chaleur résiduelle.</li>`;
+
+        } else if (methode === 'sauce') {
+            volEau = (quantite / 1000) * 0.45;
+            
+            let tempsSec = (quantite / 1000) * 2400;
+            if (typeViande === 'boeuf' || typeViande === 'gibier') tempsSec *= 1.25;
+            
+            tSeconds = Math.round(tempsSec);
+            whSaved = 420;
+
+            stepList.innerHTML += `<li>Colorer brièvement la viande et les aromates dans votre cocotte.</li>`;
+            stepList.innerHTML += `<li>Mouiller avec ~${volEau.toFixed(2)}L de liquide (bouillon/vin).</li>`;
+            stepList.innerHTML += `<li>Porter à forte ébullition pendant 8 à 10 minutes sous couvercle.</li>`;
+            stepList.innerHTML += `<li><strong>COUPEZ LE FEU</strong>. La masse thermique de la cocotte assure le mijotage passif.</li>`;
+
+        } else if (methode === 'microonde') {
+            document.getElementById('infoEau').style.display = "none";
+            
+            let tempsSec = (quantite / 100) * 75;
+            if (typeViande === 'volaille') tempsSec *= 0.85;
+            
+            tSeconds = Math.round(tempsSec);
+            whSaved = 150;
+
+            stepList.innerHTML += `<li>Disposer la viande dans un plat adapté avec 1 cuillère à soupe d'eau au fond.</li>`;
+            stepList.innerHTML += `<li>Couvrir avec une cloche ou un film étirable perforé.</li>`;
+            stepList.innerHTML += `<li>Cuire à <strong>400W-500W maxi</strong> (température douce préservant les nutriments).</li>`;
+            stepList.innerHTML += `<li>Laisser reposer 2 minutes au chaud avant de consommer.</li>`;
+        }
+    }
+
+    document.getElementById('eau').innerText = volEau.toFixed(2);
+    document.getElementById('ecoWh').innerText = Math.max(0, whSaved);
+    document.getElementById('ecoEur').innerText = (Math.max(0, whSaved) * (tarifKwh / 1000)).toFixed(2);
+
+    if (!active) {
+        sec = tSeconds;
+        showTime();
+    }
+}
+
+function showTime() {
+    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+    const s = (sec % 60).toString().padStart(2, '0');
+    document.getElementById('disp').innerText = `${m}:${s}`;
+}
+
+function resetTimerState() {
+    active = false;
+    clearInterval(inter);
+    releaseWakeLock();
+    const btn = document.getElementById('btn');
+    btn.innerText = "Démarrer la cuisson";
+    btn.style.background = "var(--primary)";
+}
+
+function tick() {
+    const remaining = Math.round((endTimestamp - Date.now()) / 1000);
+    sec = Math.max(0, remaining);
+    showTime();
+    
+    if (remaining <= 0) {
+        clearInterval(inter); 
+        active = false;
+        const b = document.getElementById('btn');
+        b.innerText = "Cuisson Terminée !"; 
+        b.style.background = "#34495e";
+        
+        releaseWakeLock();
+        localStorage.removeItem('ecocook_end');
+        
+        const co2 = sessionWh * gCO2ParKwh / 1000;
+        const totals = JSON.parse(localStorage.getItem('ecocook_totals') || '{"wh":0,"eur":0,"co2":0}');
+        totals.wh += sessionWh; 
+        totals.eur += sessionEur; 
+        totals.co2 += co2;
+        
+        localStorage.setItem('ecocook_totals', JSON.stringify(totals));
+        displayTotals(totals);
+        declencherAlerteVocale();
+    }
+}
+
+function toggle() {
+    const b = document.getElementById('btn');
+    if (active) {
+        clearInterval(inter); 
+        active = false;
+        b.innerText = "Reprendre la cuisson"; 
+        b.style.background = "var(--primary)";
+        releaseWakeLock();
+        localStorage.removeItem('ecocook_end');
+    } else {
+        if (!audioCtx) {
+            try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+        }
+        active = true; 
+        b.innerText = "PAUSE (Cuisson en cours...)"; 
+        b.style.background = "var(--red)";
+        
+        requestWakeLock();
+        sessionWh = parseFloat(document.getElementById('ecoWh').innerText) || 0;
+        sessionEur = parseFloat(document.getElementById('ecoEur').innerText) || 0;
+        endTimestamp = Date.now() + sec * 1000;
+        localStorage.setItem('ecocook_end', endTimestamp);
+        inter = setInterval(tick, 1000);
+    }
+}
+
+async function requestWakeLock() {
+    try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+}
+
+function releaseWakeLock() {
+    if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
+}
+
+function declencherAlerteVocale() {
+    const cat = document.getElementById('category').value;
+    let nomAliment = cat === 'oeufs' ? "les œufs" : "la viande";
+
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
+        oscillator.start(); 
+        oscillator.stop(audioCtx.currentTime + 0.5);
+    } catch(e) {}
+
+    setTimeout(() => {
+        if ('speechSynthesis' in window) {
+            const message = new SpeechSynthesisUtterance(`La cuisson optimale pour ${nomAliment} est terminée. Récupérez votre préparation.`);
+            message.lang = 'fr-FR'; 
+            window.speechSynthesis.speak(message);
+        } else {
+            alert(`⏰ Cuisson terminée pour ${nomAliment} !`);
+        }
+        calculer();
+    }, 500);
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && active && wakeLock === null) {
+        requestWakeLock();
+    }
+});
+
+function displayTotals(totals) {
+    totals = totals || JSON.parse(localStorage.getItem('ecocook_totals') || '{"wh":0,"eur":0,"co2":0}');
+    document.getElementById('totalWh').innerText = Math.round(totals.wh);
+    document.getElementById('totalEur').innerText = totals.eur.toFixed(2);
+    document.getElementById('totalCo2').innerText = Math.round(totals.co2);
+}
+
+function resetTotals() {
+    if (confirm("Réinitialiser l'historique d'économies ?")) {
+        localStorage.removeItem('ecocook_totals');
+        displayTotals();
+    }
+}
+
+window.onload = () => {
+    displayTotals();
+    calculer();
+    const savedEnd = localStorage.getItem('ecocook_end');
+    if (savedEnd) {
+        endTimestamp = parseInt(savedEnd, 10);
+        const remaining = Math.round((endTimestamp - Date.now()) / 1000);
+        if (remaining > 0) {
+            sec = remaining; 
+            showTime();
+            active = true;
+            const b = document.getElementById('btn');
+            b.innerText = "PAUSE (Cuisson en cours...)"; 
+            b.style.background = "var(--red)";
+            requestWakeLock();
+            inter = setInterval(tick, 1000);
+        } else {
+            localStorage.removeItem('ecocook_end');
+        }
+    }
+};
