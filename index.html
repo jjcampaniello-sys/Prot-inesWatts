@@ -38,7 +38,7 @@
             color: var(--primary);
             font-size: 1.5rem;
             text-align: center;
-        }
+        }je
 
         .group {
             margin-bottom: 16px;
@@ -163,6 +163,8 @@
             <option value="porc">🐖 Porc</option>
             <option value="mouton">🐑 Mouton / Agneau</option>
             <option value="gibier">🦌 Gibier</option>
+           <option value="viandes">🥩 Viandes (Volaille, Bœuf, Porc...)</option>
+           <option value="poissons">🐟 Poissons & Crustacés</option>
         </select>
 
         <label for="cuissonViande" style="margin-top: 8px;">Appoint de cuisson :</label>
@@ -176,6 +178,23 @@
             <option value="poele">🍳 Poêle antiadhésive (Sans matière grasse + couvercle)</option>
             <option value="sauce">🥘 En sauce / Ragoût (Inertie thermique passive)</option>
             <option value="microonde">⚡ Micro-ondes (Basse puissance à la vapeur)</option>
+        </select>
+    </div>
+    <!-- Options Poissons -->
+    <div id="poissons-options" class="group" style="display:none;">
+        <label for="typePoisson">Type de poisson / chair :</label>
+        <select id="typePoisson" onchange="calculer()">
+            <option value="blanc">🐟 Chair Blanche (Cabillaud, Lieu, Merlan) [Poche très vite]</option>
+            <option value="ferme">🐠 Chair Ferme (Lotte, Espadon, Thon) [Garde sa tenue]</option>
+            <option value="gras">Salmonidés / Chair Grasse (Saumon, Maquereau, Sardine) [Poche parfaitement]</option>
+            <option value="crustaces">🦐 Crustacés & Mollusques (Crevettes, St-Jacques, Encornet) [Flash rapide]</option>
+        </select>
+
+        <label for="methodePoisson" style="margin-top: 8px;">Mode de cuisson :</label>
+        <select id="methodePoisson" onchange="calculer()">
+            <option value="poele">🍳 Poêle antiadhésive (À couvert / feu coupé)</option>
+            <option value="poche">🫕 Poché (Cuisson passive dans l'eau / bouillon)</option>
+            <option value="microonde">⚡ Micro-ondes (Cuisson douce sous cloche / vapeur)</option>
         </select>
     </div>
 
