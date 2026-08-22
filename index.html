@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoCook - Assistant de Cuisson Éco-Responsable</title>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-dark: #1b5e20;
+            --bg: #f4f6f8;
+            --card: #ffffff;
+            --text: #2c3e50;
+            --red: #e53935;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background-color: var(--card);
+            max-width: 480px;
+            width: 100%;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        .group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+
+        .row-flex {
+            display: flex;
+            gap: 12px;
+        }
+
+        .row-flex > div {
+            flex: 1;
+        }
+
+        .box {
+            background: #eef7ee;
+            border-left: 4px solid var(--primary);
+            padding: 12px 16px;
+            border-radius: 4px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .step-list {
+            padding-left: 20px;
+            margin: 8px 0;
+        }
+
+        .step-list li {
+            margin-bottom: 6px;
+        }
+
+        .eco-badge {
+            background: #d4edda;
+            color: #155724;
+            padding: 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .timer {
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0 10px 0;
+            letter-spacing: 2px;
+            color: var(--primary-dark);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🌱 EcoCook</h1>
+    
+    <div class="group">
+        <label for="category">Type d'aliment :</label>
+        <select id="category" onchange="toggleInputs()">
+            <option value="oeufs">🥚 Œufs (Coque, Mollet, Dur)</option>
+            <option value="viandes">🥩 Viandes (Volaille, Bœuf, Porc...)</option>
+        </select>
+    </div>
+
+    <!-- Options Œufs -->
+    <div id="oeufs-options" class="group">
+        <label for="cuissonOeuf">Cuisson désirée :</label>
+        <select id="cuissonOeuf" onchange="calculer()">
+            <option value="coque">🥚 À la coque (jaune coulant)</option>
+            <option value="mollet">🍳 Mollet (jaune crémeux)</option>
+            <option value="dur">🟡 Dur (jaune ferme)</option>
+        </select>
+        <label for="tailleOeuf" style="margin-top: 8px;">Calibre des œufs :</label>
+        <select id="tailleOeuf" onchange="calculer()">
+            <option value="S">S - Petit (~50g)</option>
+            <option value="M" selected>M - Moyen (~60g)</option>
+            <option value="L">L - Grand (~68g)</option>
+            <option value="XL">XL - Très grand (~75g)</option>
+        </select>
+    </div>
+
+    <!-- Options Viandes -->
+    <div id="viandes-options" class="group" style="display:none;">
+        <label for="typeViande">Espèce :</label>
+        <select id="typeViande" onchange="calculer()">
+            <option value="volaille">🐔 Volaille</option>
+            <option value="boeuf">🐂 Bœuf</option>
+            <option value="porc">🐖 Porc</option>
+            <option value="mouton">🐑 Mouton / Agneau</option>
+            <option value="gibier">🦌 Gibier</option>
+        </select>
+
+        <label for="cuissonViande" style="margin-top: 8px;">Appoint de cuisson :</label>
+        <select id="cuissonViande" onchange="calculer()">
+            <option value="apoint">À point / Rosé / Saignant</option>
+            <option value="biencuit">Bien cuit / À cœur</option>
+        </select>
+
+        <label for="methodeViande" style="margin-top: 8px;">Technique de cuisson :</label>
+        <select id="methodeViande" onchange="calculer()">
+            <option value="poele">🍳 Poêle antiadhésive (Sans matière grasse + couvercle)</option>
+            <option value="sauce">🥘 En sauce / Ragoût (Inertie thermique passive)</option>
+            <option value="microonde">⚡ Micro-ondes (Basse puissance à la vapeur)</option>
+        </select>
+    </div>
+
+    <!-- Quantité -->
+    <div class="group">
+        <label id="labelPoids" for="poids">Nombre d'œufs :</label>
+        <input type="number" id="poids" value="2" min="1" oninput="calculer()">
+    </div>
+
+    <!-- Ustensile & Énergie -->
+    <div class="group">
+        <label for="casserole">Ustensile utilisé :</label>
+        <select id="casserole" onchange="calculer()">
+            <option value="lourde">Fonte / Fond épais capsulé (Conserve la chaleur)</option>
+            <option value="legere">Inox fin / Aluminium (Perte thermique rapide)</option>
+        </select>
+    </div>
+
+    <div class="group row-flex">
+        <div>
+            <label for="tarifKwh">Tarif (€/kWh) :</label>
+            <input type="number" id="tarifKwh" value="0.25" min="0" step="0.01" oninput="calculer()">
+        </div>
+        <div>
+            <label>Économies cumulées <a href="#" onclick="resetTotals();return false;" style="font-size:10px;">(reset)</a></label>
+            <div style="font-size:11px;padding-top:6px;">
+                ⚡<span id="totalWh">0</span> Wh · 💶<span id="totalEur">0.00</span> €<br>🌱<span id="totalCo2">0</span> g CO₂
+            </div>
+        </div>
+    </div>
+
+    <!-- Résultats et Étapes -->
+    <div class="box">
+        <div id="infoEau"><strong>💧 Eau nécessaire :</strong> <span id="eau">0.00</span> L</div>
+        <div style="margin-top: 8px; font-weight: bold;">Instructions de cuisson écologique :</div>
+        <ol class="step-list" id="prepSteps"></ol>
+        
+        <div class="eco-badge">
+            📈 Économie estimée : ~<span id="ecoWh">0</span> Wh (<span id="ecoEur">0.00</span> €)
+        </div>
+    </div>
+
+    <div class="timer" id="disp">00:00</div>
+    <button id="btn" onclick="toggle()">Démarrer la cuisson</button>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
