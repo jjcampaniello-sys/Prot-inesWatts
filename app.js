@@ -16,6 +16,7 @@ function toggleInputs() {
     
     document.getElementById('oeufs-options').style.display = (cat === 'oeufs') ? 'block' : 'none';
     document.getElementById('viandes-options').style.display = (cat === 'viandes') ? 'block' : 'none';
+document.getElementById('poissons-options').style.display = (cat === 'poissons') ? 'block' : 'none';
 
     const labelPoids = document.getElementById('labelPoids');
     const inputPoids = document.getElementById('poids');
@@ -25,6 +26,7 @@ function toggleInputs() {
         if (inputPoids.value > 12) inputPoids.value = 2;
     } else {
         labelPoids.innerText = "Masse de la viande (grammes) :";
+        if (cat === 'poissons') labelPoids.innerText = "Masse du poisson / crustacés (grammes) :";
         if (inputPoids.value < 10) inputPoids.value = 200;
     }
 
@@ -116,8 +118,52 @@ function calculer() {
             stepList.innerHTML += `<li>Couvrir avec une cloche ou un film étirable perforé.</li>`;
             stepList.innerHTML += `<li>Cuire à <strong>400W-500W maxi</strong> (température douce préservant les nutriments).</li>`;
             stepList.innerHTML += `<li>Laisser reposer 2 minutes au chaud avant de consommer.</li>`;
+            
+        }  else if (cat === 'poissons') {
+        const typeP = document.getElementById('typePoisson').value;
+        const methodeP = document.getElementById('methodePoisson').value;
+        document.getElementById('infoSel').style.display = "none";
+
+        if (methodeP === 'poche') {
+            volEau = Math.min(2.0, 0.4 + (quantite / 1000) * 0.8);
+            document.getElementById('infoEau').style.display = "block";
+            
+            let tempsSec = 300; // Base 5 min
+            if (typeP === 'ferme') tempsSec = 480;
+            if (typeP === 'crustaces') tempsSec = 180;
+            tSeconds = tempsSec;
+            whSaved = 200;
+
+            stepList.innerHTML += `<li>Porter <strong>${volEau.toFixed(2)}L d'eau</strong> (ou court-bouillon) à ébullition sous couvercle.</li>`;
+            stepList.innerHTML += `<li>Plonger le poisson/crustacé délicatement dans l'eau bouillante.</li>`;
+            stepList.innerHTML += `<li><strong>COUPEZ LE FEU IMMÉDIATEMENT</strong> et mettez un couvercle étanche.</li>`;
+            stepList.innerHTML += `<li>Le poisson poche en douceur sans détruire ses chairs ni assécher la protéine.</li>`;
+
+        } else if (methodeP === 'poele') {
+            document.getElementById('infoEau').style.display = "none";
+            let tempsSec = (quantite / 100) * 60; 
+            if (typeP === 'ferme') tempsSec *= 1.4;
+            if (typeP === 'crustaces') tempsSec = 120;
+            tSeconds = Math.round(tempsSec);
+            whSaved = 90;
+
+            stepList.innerHTML += `<li>Chauffer la poêle à feu moyen (à sec ou très légèrement huilée).</li>`;
+            stepList.innerHTML += `<li>Saisir le poisson 45 secondes côté peau/surface.</li>`;
+            stepList.innerHTML += `<li><strong>COUPEZ LE FEU</strong>, mettez un couvercle et laissez la chaleur étouffée finir la cuisson.</li>`;
+
+        } else if (methodeP === 'microonde') {
+            document.getElementById('infoEau').style.display = "none";
+            let tempsSec = (quantite / 100) * 45;
+            if (typeP === 'ferme') tempsSec *= 1.2;
+            tSeconds = Math.round(tempsSec);
+            whSaved = 130;
+
+            stepList.innerHTML += `<li>Placer le poisson dans un plat couvert avec 1 c. à soupe d'eau ou de citron.</li>`;
+            stepList.innerHTML += `<li>Cuire à puissance modérée (<strong>350W-450W</strong> maxi) pour ne pas faire exploser les fibres musculaires.</li>`;
+            stepList.innerHTML += `<li>Laisser reposer 1 à 2 minutes sous cloche avant d'ouvrir.</li>`;
         }
     }
+
 
     document.getElementById('eau').innerText = volEau.toFixed(2);
     document.getElementById('ecoWh').innerText = Math.max(0, whSaved);
