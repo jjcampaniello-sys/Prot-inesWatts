@@ -1,0 +1,17 @@
+{
+  "name": "ProteinWatts - Cuisson Éco-Protéines",
+  "short_name": "ProteinWatts",
+  "description": "Assistant de cuisson optimale et éco-responsable des œufs et viandes",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2e7d32",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
