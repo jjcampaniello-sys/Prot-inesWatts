@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProteinWatts — À propos</title>
+<style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 0; background: #f4f7f5; color: #263238; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.65; }
+    .page { width: 100%; max-width: 760px; margin: 0 auto; padding: 20px 18px 40px; }
+    .header { background: white; border-radius: 16px; padding: 24px 20px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    h1, h2 { margin: 0 0 16px; color: #1b5e20; }
+    h1 { font-size: 27px; } h2 { font-size: 23px; } h3 { margin: 26px 0 10px; font-size: 19px; color: #37474f; }
+    p { margin: 0 0 16px; } ul { margin: 8px 0 20px; padding-left: 24px; } li { margin-bottom: 8px; }
+    .section { background: white; border-radius: 16px; padding: 22px 20px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .warning { background: #fff8e1; border-left: 5px solid #f9a825; border-radius: 10px; padding: 15px 16px; margin: 18px 0 8px; }
+    .formula { background: #eef7ee; border-radius: 10px; padding: 14px; margin: 16px 0; text-align: center; font-size: 18px; font-weight: bold; color: #1b5e20; }
+    .files { background: #f5f5f5; border-radius: 10px; padding: 14px 16px; margin-top: 10px; }
+    .files code { font-family: monospace; font-size: 14px; }
+    .footer { text-align: center; padding: 25px 10px 10px; color: #607d8b; font-size: 15px; }
+    .back { display: inline-block; margin-bottom: 18px; padding: 9px 14px; border-radius: 10px; background: #2e7d32; color: white; text-decoration: none; font-weight: bold; }
+</style>
+</head>
+<body>
+<div class="page">
+<a href="index.html" class="back">← Retour à ProteinWatts</a>
+
+<div class="header">
+    <h1>🥩 ProteinWatts</h1>
+    <p class="intro"><strong>Assistant de Cuisson Éco-Responsable pour Œufs et Viandes</strong></p>
+    <p>ProteinWatts est conçu pour maximiser la rétention nutritionnelle des protéines tout en minimisant la consommation énergétique des plaques de cuisson et micro-ondes.</p>
+    <div class="warning">
+        <strong>Important :</strong> Respectez toujours la température minimale à cœur requise pour les volailles et porcs (min. 68°C-72°C) pour garantir la sécurité sanitaire.
+    </div>
+</div>
+
+<div class="section">
+    <h2>🔬 Impact Chimique et Nutritionnel de la Cuisson</h2>
+
+    <h3>1. Coagulation Protéique & Dénaturation</h3>
+    <p>Les protéines de l'œuf (ovalbumine) et de la viande (myosine, actinie) se dénaturent entre 60°C et 80°C. Dépasser 85°C sur une trop longue durée rétracte excessivement les fibres musculaires et le réseau protéique, expulsant l'eau structurelle. Cela rend les viandes sèches et le blanc d'œuf caoutchouteux.</p>
+
+    <h3>2. Conservation des Nutriments et Minéraux</h3>
+    <p>Une cuisson douce sous couvercle ou par chaleur résiduelle évite la destruction des vitamines thermolabiles (groupe B, B12, B6) et préserve les minéraux (Fer héminique, Zinc) au sein des jus de viande retenus.</p>
+
+    <h3>3. Limitation des Produits Toxiques (AGE et HAP)</h3>
+    <p>La cuisson douce passive sans apport superflu de graisse limite la formation de produits de glycation avancée (AGE) et d'amines hétérocycliques, souvent générés lors d'une saisie prolongée à haute température.</p>
+
+    <div class="formula">Q = (m × Cp × ΔT) + Q_vapeur</div>
+    <p>ProteinWatts calcule la conservation de cette énergie calorique sous couvercle pour maintenir le processus de cuisson sans apport électrique permanent.</p>
+</div>
+
+<div class="section">
+    <h2>⚙️ Fonctionnalités</h2>
+    <ul>
+        <li><strong>Formules thermiques ajustées :</strong> Prise en compte du ratio masse/surface selon les lois de conduction $M^{2/3}$.</li>
+        <li><strong>Modes de cuisson adaptés :</strong> Poêle à sec étouffée, mijoté passif, micro-ondes vapeur basse puissance.</li>
+        <li><strong>Calculateur de volume d'eau minimal :</strong> Réduction jusqu'à 70% du volume d'eau habituellement utilisé pour chauffer les œufs.</li>
+    </ul>
+</div>
+
+<div class="section">
+    <h2>🛠️ Fichiers du projet</h2>
+    <div class="files">
+        <p><code>index.html</code> : Interface utilisateur responsive.</p>
+        <p><code>app.js</code> : Algorithmes thermiques et chronomètre.</p>
+        <p><code>manifest.json</code> : Paramètres de l'application Progressive Web App (PWA).</p>
+        <p><code>readme.html</code> / <code>readme.md</code> : Documentation scientifique et d'usage.</p>
+    </div>
+</div>
+
+<div class="footer">
+    <p>🥩 <strong>ProteinWatts</strong> — La précision thermique au service de vos protéines.</p>
+</div>
+</div>
+</body>
+</html>
