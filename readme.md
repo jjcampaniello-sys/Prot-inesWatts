@@ -1,6 +1,6 @@
-# 🥩 ProteinWatts — Assistant de Cuisson Éco-Protéines
+# 🥩 EffiProt — Assistant de Cuisson Éco-Protéines
 
-ProteinWatts est une application web PWA légère conçue pour optimiser la cuisson des **œufs** et des **viandes** en combinant réduction d'énergie (jusqu'à 70%) et préservation des qualités organoleptiques et nutritionnelles.
+EffiProt est une application web PWA légère conçue pour optimiser la cuisson des **œufs** et des **viandes** en combinant réduction d'énergie (jusqu'à 70%) et préservation des qualités organoleptiques et nutritionnelles.
 
 ---
 
@@ -18,7 +18,7 @@ ProteinWatts est une application web PWA légère conçue pour optimiser la cuis
 
 ## ⚙️ Algorithme Thermal de l'Application
 
-ProteinWatts ajuste les temps de repos hors du feu en se basant sur :
+EffiProt ajuste les temps de repos hors du feu en se basant sur :
 1. **La masse / le calibre :** Calcul par conduction thermique proportionnel à $M^{2/3}$ pour adapter la pénétration de la chaleur au cœur de l'aliment.
 2. **Le volume d'eau minimal :** Réduction de la quantité d'eau pour n'utiliser que la vapeur piégée sous couvercle.
 3. **L'inertie des récipients :** Ajustement du temps selon la capacité thermique des fonds de casseroles (fonte/inox vs aluminium fin).
@@ -34,4 +34,4 @@ ProteinWatts ajuste les temps de repos hors du feu en se basant sur :
 
 ---
 
-🌱 **ProteinWatts** — *Cuisiner les protéines intelligemment en exploitant la chaleur résiduelle.*
+🌱 **EffiProt** — *Cuisiner les protéines intelligemment en exploitant la chaleur résiduelle.*
