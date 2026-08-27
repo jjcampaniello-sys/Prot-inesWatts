@@ -1,4 +1,4 @@
-const CACHE_NAME = 'effiprot-v2'; //
+const CACHE_NAME = 'effiprot-v3'; //
 const ASSETS_TO_CACHE = [ //
   './', //
   './index.html', //
@@ -66,7 +66,7 @@ self.addEventListener('message', (event) => {
       self.registration.showNotification(titre, {
         body: message,
         icon: './icon-192.png', // Utilisation de votre icône présente dans le cache
-        vibrate:[200, 100, 200], // Séquence de vibrations pour attirer l'attention
+        vibrate:[200, 100, 200, 100, 400], // Séquence de vibrations pour attirer l'attention
         requireInteraction: true // La notification reste à l'écran tant que l'utilisateur ne clique pas dessus
      tag: 'fin-cuisson-effiprot', // AJOUT : Évite les doublons de notifications
         renotify: true,              // AJOUT : Fait vibrer le téléphone même si une ancienne notif existe
