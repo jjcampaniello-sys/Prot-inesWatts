@@ -242,13 +242,55 @@ function toggle() {
     }
 }
 
+// ====== 1. DÉFINITION DES FONCTIONS ======
 async function requestWakeLock() {
-    try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+    try {
+        if ('wakeLock' in navigator) {
+            // "screen" est requis pour empêcher l'écran de s'éteindre
+            wakeLock = await navigator.wakeLock.request('screen');
+            
+            // Écouteur crucial : si le système coupe le verrou (ex: baisse de batterie),
+            // on libère proprement la variable pour éviter les conflits logiques.
+            wakeLock.addEventListener('release', () => {
+                wakeLock = null;
+                console.log("Wake Lock libéré par le système.");
+            });
+            console.log("Wake Lock activé avec succès.");
+        }
+    } catch (err) {
+        console.error(`Échec du Wake Lock : ${err.message}`);
+    }
 }
 
 function releaseWakeLock() {
-    if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
+    if (wakeLock !== null) {
+        wakeLock.release().catch(() => {}); // Demande de relâcher le verrou
+        wakeLock = null; // Nettoyage de la variable locale
+        console.log("Wake Lock désactivé manuellement.");
+    }
 }
+
+// ====== 2. GESTION DU CYCLE DE VIE PWA ======
+// À placer en bas de votre fichier JS (remplace l'ancien écouteur)
+document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible') {
+        // Si la cuisson est en cours, on redemande le verrou immédiatement au retour sur l'appli
+        if (active && wakeLock === null) {
+            await requestWakeLock();
+        }
+        
+        // Sécurité PWA arrière-plan : Vérifier si le temps s'est écoulé pendant la mise en veille
+        const savedEnd = localStorage.getItem('ecocook_end');
+        if (savedEnd) {
+            const remaining = Math.round((parseInt(savedEnd, 10) - Date.now()) / 1000);
+            if (remaining <= 0 && active) {
+                sec = 0;
+                tick(); // Déclenche immédiatement l'alerte de fin
+            }
+        }
+    }
+});
+
 
 function declencherAlerteVocale() {
     const cat = document.getElementById('category').value;
