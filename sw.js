@@ -68,6 +68,9 @@ self.addEventListener('message', (event) => {
         icon: './icon-192.png', // Utilisation de votre icône présente dans le cache
         vibrate:[200, 100, 200], // Séquence de vibrations pour attirer l'attention
         requireInteraction: true // La notification reste à l'écran tant que l'utilisateur ne clique pas dessus
+     tag: 'fin-cuisson-effiprot', // AJOUT : Évite les doublons de notifications
+        renotify: true,              // AJOUT : Fait vibrer le téléphone même si une ancienne notif existe
+        data: { url: './' }          // AJOUT : Permet de rouvrir l'application au clic
       });
       minuteurCuisson = null;
     }, delaiMs);
