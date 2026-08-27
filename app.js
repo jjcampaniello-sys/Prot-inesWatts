@@ -238,6 +238,8 @@ function toggle() {
         sessionEur = parseFloat(document.getElementById('ecoEur').innerText) || 0;
         endTimestamp = Date.now() + sec * 1000;
         localStorage.setItem('ecocook_end', endTimestamp);
+        // AJOUT SÉCURITÉ : Nettoyer l'intervalle avant d'en créer un nouveau
+        clearInterval(inter); 
         inter = setInterval(tick, 1000);
     }
 }
@@ -280,21 +282,42 @@ function demanderPermissionNotifications() {
 }
 
 // ====== 2. GESTION DU CYCLE DE VIE PWA ======
-// À placer en bas de votre fichier JS (remplace l'ancien écouteur)
 document.addEventListener('visibilitychange', async () => {
     if (document.visibilityState === 'visible') {
-        // Si la cuisson est en cours, on redemande le verrou immédiatement au retour sur l'appli
         if (active && wakeLock === null) {
             await requestWakeLock();
         }
         
-        // Sécurité PWA arrière-plan : Vérifier si le temps s'est écoulé pendant la mise en veille
+        // AJOUT : Annuler l'alerte de notification si l'utilisateur revient sur l'appli
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: 'ANNULER_ALERTE' });
+        }
+        
         const savedEnd = localStorage.getItem('ecocook_end');
         if (savedEnd) {
             const remaining = Math.round((parseInt(savedEnd, 10) - Date.now()) / 1000);
             if (remaining <= 0 && active) {
                 sec = 0;
-                tick(); // Déclenche immédiatement l'alerte de fin
+                tick(); 
+            }
+        }
+    } 
+    // AJOUT COMPORTEMENT ARRIÈRE-PLAN : 
+    else if (document.visibilityState === 'hidden' && active) {
+        const savedEnd = localStorage.getItem('ecocook_end');
+        if (savedEnd) {
+            const tempsRestantMs = parseInt(savedEnd, 10) - Date.now();
+            
+            if (tempsRestantMs > 0 && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                const cat = document.getElementById('category').value;
+                let aliment = cat === 'oeufs' ? 'vos œufs' : (cat === 'poissons' ? 'votre poisson' : 'votre viande');
+                
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'PROGRAMMER_ALERTE',
+                    delaiMs: tempsRestantMs,
+                    titre: '⏰ Cuisson Terminée (EffiProt) !',
+                    message: `Le temps est écoulé pour ${aliment}. Retirez-les du feu.`
+                });
             }
         }
     }
@@ -334,11 +357,6 @@ function declencherAlerteVocale() {
     }, 500);
 }
 
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && active && wakeLock === null) {
-        requestWakeLock();
-    }
-});
 
 function displayTotals(totals) {
     totals = totals || JSON.parse(localStorage.getItem('ecocook_totals') || '{"wh":0,"eur":0,"co2":0}');
