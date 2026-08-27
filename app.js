@@ -269,6 +269,15 @@ function releaseWakeLock() {
         console.log("Wake Lock désactivé manuellement.");
     }
 }
+function demanderPermissionNotifications() {
+    if ('Notification' in window) {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log("Notifications autorisées !");
+            }
+        });
+    }
+}
 
 // ====== 2. GESTION DU CYCLE DE VIE PWA ======
 // À placer en bas de votre fichier JS (remplace l'ancien écouteur)
@@ -348,6 +357,28 @@ function resetTotals() {
 window.onload = () => {
     displayTotals();
     calculer();
+    
+    // ==========================================
+    // AJOUT 1 : Enregistrement du Service Worker (sw.js)
+    // ==========================================
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker enregistré avec succès !', reg.scope))
+            .catch(err => console.error('Échec de l\'enregistrement du Service Worker :', err));
+    }
+
+    // ==========================================
+    // AJOUT 2 : Demande d'autorisation pour les notifications
+    // ==========================================
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log('Notifications système autorisées par l\'utilisateur.');
+            }
+        });
+    }
+
+    // Reprise de la cuisson existante si la page est rechargée
     const savedEnd = localStorage.getItem('ecocook_end');
     if (savedEnd) {
         endTimestamp = parseInt(savedEnd, 10);
@@ -359,10 +390,18 @@ window.onload = () => {
             const b = document.getElementById('btn');
             b.innerText = "PAUSE (Cuisson en cours...)"; 
             b.style.background = "var(--red)";
+            
+            // Sécurité : On tente de réactiver le Wake Lock, mais attention :
+            // Certains navigateurs bloquent le Wake Lock au chargement de la page 
+            // tant que l'utilisateur n'a pas cliqué quelque part.
             requestWakeLock();
+            
+            // Correction de bug : Sécuriser l'intervalle
+            clearInterval(inter);
             inter = setInterval(tick, 1000);
         } else {
             localStorage.removeItem('ecocook_end');
         }
     }
 };
+
