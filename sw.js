@@ -1,4 +1,4 @@
-const CACHE_NAME = 'effiprot-v3'; //
+const CACHE_NAME = 'Prot-in-Watts-v3'; //
 const ASSETS_TO_CACHE = [ //
   './', //
   './index.html', //
