@@ -1,6 +1,6 @@
 {
-  "name": "EffiProt - Cuisson Éco-Protéines",
-  "short_name": "EffiProt",
+  "name": "Prot-in-Watts - Cuisson Éco-Protéines",
+  "short_name": "Prot-in-Watts",
   "description": "Assistant de cuisson optimale et éco-responsable des œufs, viandes et poissons",
   "start_url": "index.html",
   "display": "standalone",
