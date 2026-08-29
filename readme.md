@@ -1,6 +1,6 @@
-# 🥩 EffiProt — Assistant de Cuisson Éco-Protéines
+# 🥩 Prot-in-Watts — Assistant de Cuisson Éco-Protéines
 
-EffiProt est une application web PWA légère conçue pour optimiser la cuisson des **œufs**, des **viandes** et des **poissons / crustacés** en combinant réduction d'énergie (jusqu'à 70%) et préservation des qualités organoleptiques et nutritionnelles.
+Prot-in-Watts est une application web PWA légère conçue pour optimiser la cuisson des **œufs**, des **viandes** et des **poissons / crustacés** en combinant réduction d'énergie (jusqu'à 70%) et préservation des qualités organoleptiques et nutritionnelles.
 
 ---
 
@@ -20,7 +20,7 @@ EffiProt est une application web PWA légère conçue pour optimiser la cuisson 
 
 ## ⚙️ Algorithme Thermal de l'Application
 
-EffiProt ajuste les temps de repos hors du feu en se basant sur :
+Prot-in-Watts ajuste les temps de repos hors du feu en se basant sur :
 1. **La masse / le calibre :** Calcul par conduction thermique proportionnel à M^2/3 pour adapter la pénétration de la chaleur au cœur de l'aliment.
 2. **Le volume d'eau minimal :** Réduction de la quantité d'eau pour n'utiliser que la vapeur piégée sous couvercle.
 3. **L'inertie des récipients :** Ajustement du temps selon la capacité thermique des fonds de casseroles (fonte/inox vs aluminium fin).
@@ -37,4 +37,4 @@ EffiProt ajuste les temps de repos hors du feu en se basant sur :
 
 ---
 
-🌱 **EffiProt** — *Cuisiner les protéines intelligemment en exploitant la chaleur résiduelle.*
+🌱 **Prot-in-Watts** — *Cuisiner les protéines intelligemment en exploitant la chaleur résiduelle.*
