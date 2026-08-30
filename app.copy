@@ -238,17 +238,91 @@ function toggle() {
         sessionEur = parseFloat(document.getElementById('ecoEur').innerText) || 0;
         endTimestamp = Date.now() + sec * 1000;
         localStorage.setItem('ecocook_end', endTimestamp);
+        // AJOUT SÉCURITÉ : Nettoyer l'intervalle avant d'en créer un nouveau
+        clearInterval(inter); 
         inter = setInterval(tick, 1000);
     }
 }
 
+// ====== 1. DÉFINITION DES FONCTIONS ======
 async function requestWakeLock() {
-    try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch (err) {}
+    try {
+        if ('wakeLock' in navigator) {
+            // "screen" est requis pour empêcher l'écran de s'éteindre
+            wakeLock = await navigator.wakeLock.request('screen');
+            
+            // Écouteur crucial : si le système coupe le verrou (ex: baisse de batterie),
+            // on libère proprement la variable pour éviter les conflits logiques.
+            wakeLock.addEventListener('release', () => {
+                wakeLock = null;
+                console.log("Wake Lock libéré par le système.");
+            });
+            console.log("Wake Lock activé avec succès.");
+        }
+    } catch (err) {
+        console.error(`Échec du Wake Lock : ${err.message}`);
+    }
 }
 
 function releaseWakeLock() {
-    if (wakeLock !== null) { wakeLock.release(); wakeLock = null; }
+    if (wakeLock !== null) {
+        wakeLock.release().catch(() => {}); // Demande de relâcher le verrou
+        wakeLock = null; // Nettoyage de la variable locale
+        console.log("Wake Lock désactivé manuellement.");
+    }
 }
+function demanderPermissionNotifications() {
+    if ('Notification' in window) {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log("Notifications autorisées !");
+            }
+        });
+    }
+}
+
+// ====== 2. GESTION DU CYCLE DE VIE PWA ======
+document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'visible') {
+        if (active && wakeLock === null) {
+            await requestWakeLock();
+        }
+        
+        // AJOUT : Annuler l'alerte de notification si l'utilisateur revient sur l'appli
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({ type: 'ANNULER_ALERTE' });
+        }
+        
+        const savedEnd = localStorage.getItem('ecocook_end');
+        if (savedEnd) {
+            const remaining = Math.round((parseInt(savedEnd, 10) - Date.now()) / 1000);
+            if (remaining <= 0 && active) {
+                sec = 0;
+                tick(); 
+            }
+        }
+    } 
+    // AJOUT COMPORTEMENT ARRIÈRE-PLAN : 
+    else if (document.visibilityState === 'hidden' && active) {
+        const savedEnd = localStorage.getItem('ecocook_end');
+        if (savedEnd) {
+            const tempsRestantMs = parseInt(savedEnd, 10) - Date.now();
+            
+            if (tempsRestantMs > 0 && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                const cat = document.getElementById('category').value;
+                let aliment = cat === 'oeufs' ? 'vos œufs' : (cat === 'poissons' ? 'votre poisson' : 'votre viande');
+                
+                navigator.serviceWorker.controller.postMessage({
+                    type: 'PROGRAMMER_ALERTE',
+                    delaiMs: tempsRestantMs,
+                    titre: '⏰ Cuisson Terminée (EffiProt) !',
+                    message: `Le temps est écoulé pour ${aliment}. Retirez-les du feu.`
+                });
+            }
+        }
+    }
+});
+
 
 function declencherAlerteVocale() {
     const cat = document.getElementById('category').value;
@@ -283,11 +357,6 @@ function declencherAlerteVocale() {
     }, 500);
 }
 
-document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && active && wakeLock === null) {
-        requestWakeLock();
-    }
-});
 
 function displayTotals(totals) {
     totals = totals || JSON.parse(localStorage.getItem('ecocook_totals') || '{"wh":0,"eur":0,"co2":0}');
@@ -306,6 +375,28 @@ function resetTotals() {
 window.onload = () => {
     displayTotals();
     calculer();
+    
+    // ==========================================
+    // AJOUT 1 : Enregistrement du Service Worker (sw.js)
+    // ==========================================
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker enregistré avec succès !', reg.scope))
+            .catch(err => console.error('Échec de l\'enregistrement du Service Worker :', err));
+    }
+
+    // ==========================================
+    // AJOUT 2 : Demande d'autorisation pour les notifications
+    // ==========================================
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                console.log('Notifications système autorisées par l\'utilisateur.');
+            }
+        });
+    }
+
+    // Reprise de la cuisson existante si la page est rechargée
     const savedEnd = localStorage.getItem('ecocook_end');
     if (savedEnd) {
         endTimestamp = parseInt(savedEnd, 10);
@@ -317,7 +408,14 @@ window.onload = () => {
             const b = document.getElementById('btn');
             b.innerText = "PAUSE (Cuisson en cours...)"; 
             b.style.background = "var(--red)";
+            
+            // Sécurité : On tente de réactiver le Wake Lock, mais attention :
+            // Certains navigateurs bloquent le Wake Lock au chargement de la page 
+            // tant que l'utilisateur n'a pas cliqué quelque part.
             requestWakeLock();
+            
+            // Correction de bug : Sécuriser l'intervalle
+            clearInterval(inter);
             inter = setInterval(tick, 1000);
         } else {
             localStorage.removeItem('ecocook_end');
