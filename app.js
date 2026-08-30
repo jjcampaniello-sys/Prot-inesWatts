@@ -167,6 +167,7 @@ function calculer() {
     document.getElementById('eau').innerText = volEau.toFixed(2);
     document.getElementById('ecoWh').innerText = Math.max(0, whSaved);
     document.getElementById('ecoEur').innerText = (Math.max(0, whSaved) * (tarifKwh / 1000)).toFixed(2);
+    document.getElementById('ecoCo2').innerText = Math.round(Math.max(0, whSaved) * gCO2ParKwh / 1000);
 
     if (!active) {
         sec = tSeconds;
