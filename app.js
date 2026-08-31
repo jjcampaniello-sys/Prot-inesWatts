@@ -10,6 +10,7 @@ const configOeufs = {
 };
 
 const calibresOeufs = { S: 50, M: 60, L: 68, XL: 75 };
+const rendementMicroonde = 0.65; // efficacité électrique réelle d'un magnétron domestique (~65%), le reste part en pertes thermiques
 
 function toggleInputs() {
     const cat = document.getElementById('category').value;
@@ -112,7 +113,7 @@ function calculer() {
             if (typeViande === 'volaille') tempsSec *= 0.85;
             
             tSeconds = Math.round(tempsSec);
-            whSaved = 150;
+            whSaved = Math.round(150 * rendementMicroonde);
 
             stepList.innerHTML += `<li>Disposer la viande dans un plat adapté avec 1 cuillère à soupe d'eau au fond.</li>`;
             stepList.innerHTML += `<li>Couvrir avec une cloche ou un film étirable perforé.</li>`;
@@ -156,7 +157,7 @@ function calculer() {
             let tempsSec = (quantite / 100) * 45;
             if (typeP === 'ferme') tempsSec *= 1.2;
             tSeconds = Math.round(tempsSec);
-            whSaved = 130;
+            whSaved = Math.round(130 * rendementMicroonde);
 
             stepList.innerHTML += `<li>Placer le poisson dans un plat couvert avec 1 c. à soupe d'eau ou de citron.</li>`;
             stepList.innerHTML += `<li>Cuire à puissance modérée (<strong>350W-450W</strong> maxi) pour ne pas faire exploser les fibres musculaires.</li>`;
