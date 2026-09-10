@@ -131,6 +131,7 @@ function calculer() {
             
             let tempsSec = 300;
             if (typeP === 'ferme') tempsSec = 480;
+            if (typeP === 'gras') tempsSec = 360;
             if (typeP === 'crustaces') tempsSec = 180;
             tSeconds = tempsSec;
             whSaved = 200;
@@ -144,6 +145,7 @@ function calculer() {
             document.getElementById('infoEau').style.display = "none";
             let tempsSec = (quantite / 100) * 60; 
             if (typeP === 'ferme') tempsSec *= 1.4;
+            if (typeP === 'gras') tempsSec *= 1.15;
             if (typeP === 'crustaces') tempsSec = 120;
             tSeconds = Math.round(tempsSec);
             whSaved = 90;
@@ -156,6 +158,8 @@ function calculer() {
             document.getElementById('infoEau').style.display = "none";
             let tempsSec = (quantite / 100) * 45;
             if (typeP === 'ferme') tempsSec *= 1.2;
+            if (typeP === 'gras') tempsSec *= 1.1;
+            if (typeP === 'crustaces') tempsSec = (quantite / 100) * 30;
             tSeconds = Math.round(tempsSec);
             whSaved = Math.round(130 * rendementMicroonde);
 
@@ -175,253 +179,3 @@ function calculer() {
         showTime();
     }
 }
-
-function showTime() {
-    const m = Math.floor(sec / 60).toString().padStart(2, '0');
-    const s = (sec % 60).toString().padStart(2, '0');
-    document.getElementById('disp').innerText = `${m}:${s}`;
-}
-
-function resetTimerState() {
-    active = false;
-    clearInterval(inter);
-    releaseWakeLock();
-    const btn = document.getElementById('btn');
-    btn.innerText = "Démarrer la cuisson";
-    btn.style.background = "var(--primary)";
-}
-
-function tick() {
-    const remaining = Math.round((endTimestamp - Date.now()) / 1000);
-    sec = Math.max(0, remaining);
-    showTime();
-    
-    if (remaining <= 0) {
-        clearInterval(inter); 
-        active = false;
-        const b = document.getElementById('btn');
-        b.innerText = "Cuisson Terminée !"; 
-        b.style.background = "#34495e";
-        
-        releaseWakeLock();
-        localStorage.removeItem('ecocook_end');
-        
-        const co2 = sessionWh * gCO2ParKwh / 1000;
-        const totals = JSON.parse(localStorage.getItem('ecocook_totals') || '{"wh":0,"eur":0,"co2":0}');
-        totals.wh += sessionWh; 
-        totals.eur += sessionEur; 
-        totals.co2 += co2;
-        
-        localStorage.setItem('ecocook_totals', JSON.stringify(totals));
-        displayTotals(totals);
-        declencherAlerteVocale();
-    }
-}
-
-function toggle() {
-    const b = document.getElementById('btn');
-    if (active) {
-        clearInterval(inter); 
-        active = false;
-        b.innerText = "Reprendre la cuisson"; 
-        b.style.background = "var(--primary)";
-        releaseWakeLock();
-        localStorage.removeItem('ecocook_end');
-    } else {
-        if (!audioCtx) {
-            try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
-        }
-        active = true; 
-        b.innerText = "PAUSE (Cuisson en cours...)"; 
-        b.style.background = "var(--red)";
-        
-        requestWakeLock();
-        sessionWh = parseFloat(document.getElementById('ecoWh').innerText) || 0;
-        sessionEur = parseFloat(document.getElementById('ecoEur').innerText) || 0;
-        endTimestamp = Date.now() + sec * 1000;
-        localStorage.setItem('ecocook_end', endTimestamp);
-        // AJOUT SÉCURITÉ : Nettoyer l'intervalle avant d'en créer un nouveau
-        clearInterval(inter); 
-        inter = setInterval(tick, 1000);
-    }
-}
-
-// ====== 1. DÉFINITION DES FONCTIONS ======
-async function requestWakeLock() {
-    try {
-        if ('wakeLock' in navigator) {
-            // "screen" est requis pour empêcher l'écran de s'éteindre
-            wakeLock = await navigator.wakeLock.request('screen');
-            
-            // Écouteur crucial : si le système coupe le verrou (ex: baisse de batterie),
-            // on libère proprement la variable pour éviter les conflits logiques.
-            wakeLock.addEventListener('release', () => {
-                wakeLock = null;
-                console.log("Wake Lock libéré par le système.");
-            });
-            console.log("Wake Lock activé avec succès.");
-        }
-    } catch (err) {
-        console.error(`Échec du Wake Lock : ${err.message}`);
-    }
-}
-
-function releaseWakeLock() {
-    if (wakeLock !== null) {
-        wakeLock.release().catch(() => {}); // Demande de relâcher le verrou
-        wakeLock = null; // Nettoyage de la variable locale
-        console.log("Wake Lock désactivé manuellement.");
-    }
-}
-function demanderPermissionNotifications() {
-    if ('Notification' in window) {
-        Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-                console.log("Notifications autorisées !");
-            }
-        });
-    }
-}
-
-// ====== 2. GESTION DU CYCLE DE VIE PWA ======
-document.addEventListener('visibilitychange', async () => {
-    if (document.visibilityState === 'visible') {
-        if (active && wakeLock === null) {
-            await requestWakeLock();
-        }
-        
-        // AJOUT : Annuler l'alerte de notification si l'utilisateur revient sur l'appli
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({ type: 'ANNULER_ALERTE' });
-        }
-        
-        const savedEnd = localStorage.getItem('ecocook_end');
-        if (savedEnd) {
-            const remaining = Math.round((parseInt(savedEnd, 10) - Date.now()) / 1000);
-            if (remaining <= 0 && active) {
-                sec = 0;
-                tick(); 
-            }
-        }
-    } 
-    // AJOUT COMPORTEMENT ARRIÈRE-PLAN : 
-    else if (document.visibilityState === 'hidden' && active) {
-        const savedEnd = localStorage.getItem('ecocook_end');
-        if (savedEnd) {
-            const tempsRestantMs = parseInt(savedEnd, 10) - Date.now();
-            
-            if (tempsRestantMs > 0 && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                const cat = document.getElementById('category').value;
-                let aliment = cat === 'oeufs' ? 'vos œufs' : (cat === 'poissons' ? 'votre poisson' : 'votre viande');
-                
-                navigator.serviceWorker.controller.postMessage({
-                    type: 'PROGRAMMER_ALERTE',
-                    delaiMs: tempsRestantMs,
-                    titre: '⏰ Cuisson Terminée (EffiProt) !',
-                    message: `Le temps est écoulé pour ${aliment}. Retirez-les du feu.`
-                });
-            }
-        }
-    }
-});
-
-
-function declencherAlerteVocale() {
-    const cat = document.getElementById('category').value;
-    let nomAliment = "votre préparation";
-    if (cat === 'oeufs') nomAliment = "les œufs";
-    else if (cat === 'viandes') nomAliment = "la viande";
-    else if (cat === 'poissons') nomAliment = "le poisson";
-
-    try {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime);
-        gainNode.gain.setValueAtTime(0.5, audioCtx.currentTime);
-        oscillator.start(); 
-        oscillator.stop(audioCtx.currentTime + 0.5);
-    } catch(e) {}
-
-    setTimeout(() => {
-        if ('speechSynthesis' in window) {
-            const message = new SpeechSynthesisUtterance(`La cuisson optimale pour ${nomAliment} est terminée. Récupérez votre préparation.`);
-            message.lang = 'fr-FR'; 
-            window.speechSynthesis.speak(message);
-        } else {
-            alert(`⏰ Cuisson terminée pour ${nomAliment} !`);
-        }
-        calculer();
-    }, 500);
-}
-
-
-function displayTotals(totals) {
-    totals = totals || JSON.parse(localStorage.getItem('ecocook_totals') || '{"wh":0,"eur":0,"co2":0}');
-    document.getElementById('totalWh').innerText = Math.round(totals.wh);
-    document.getElementById('totalEur').innerText = totals.eur.toFixed(2);
-    document.getElementById('totalCo2').innerText = Math.round(totals.co2);
-}
-
-function resetTotals() {
-    if (confirm("Réinitialiser l'historique d'économies ?")) {
-        localStorage.removeItem('ecocook_totals');
-        displayTotals();
-    }
-}
-
-window.onload = () => {
-    displayTotals();
-    calculer();
-    
-    // ==========================================
-    // AJOUT 1 : Enregistrement du Service Worker (sw.js)
-    // ==========================================
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker enregistré avec succès !', reg.scope))
-            .catch(err => console.error('Échec de l\'enregistrement du Service Worker :', err));
-    }
-
-    // ==========================================
-    // AJOUT 2 : Demande d'autorisation pour les notifications
-    // ==========================================
-    if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission().then(permission => {
-            if (permission === 'granted') {
-                console.log('Notifications système autorisées par l\'utilisateur.');
-            }
-        });
-    }
-
-    // Reprise de la cuisson existante si la page est rechargée
-    const savedEnd = localStorage.getItem('ecocook_end');
-    if (savedEnd) {
-        endTimestamp = parseInt(savedEnd, 10);
-        const remaining = Math.round((endTimestamp - Date.now()) / 1000);
-        if (remaining > 0) {
-            sec = remaining; 
-            showTime();
-            active = true;
-            const b = document.getElementById('btn');
-            b.innerText = "PAUSE (Cuisson en cours...)"; 
-            b.style.background = "var(--red)";
-            
-            // Sécurité : On tente de réactiver le Wake Lock, mais attention :
-            // Certains navigateurs bloquent le Wake Lock au chargement de la page 
-            // tant que l'utilisateur n'a pas cliqué quelque part.
-            requestWakeLock();
-            
-            // Correction de bug : Sécuriser l'intervalle
-            clearInterval(inter);
-            inter = setInterval(tick, 1000);
-        } else {
-            localStorage.removeItem('ecocook_end');
-        }
-    }
-};
-
