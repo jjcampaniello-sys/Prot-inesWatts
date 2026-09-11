@@ -69,7 +69,7 @@ function calculer() {
 
         stepList.innerHTML += `<li>Mettre seulement <strong>${volEau.toFixed(2)}L d'eau</strong> à fin de recouvrir les œuf(s).</li>`;
         stepList.innerHTML += `<li>Porter à ébullition rapide sous couvercle.</li>`;
-        stepList.innerHTML += `<li>Plonger les ${nbOeufs} œuf(s) et maintenir le feu <strong>45 secondes</strong>.</li>`;
+        stepList.innerHTML += `<li>Plonger les ${nbOeufs} œuf(s) et maintenir le feu <strong>1 minutes</strong>.</li>`;
         stepList.innerHTML += `<li><strong>COUPEZ LE FEU</strong>, fermez avec un couvercle hermétique (cuisson étouffée/vapeur).</li>`;
         stepList.innerHTML += `<li>À la fin du temps, plongez les œufs dans l'eau froide pour stopper la cuisson.</li>`;
 
