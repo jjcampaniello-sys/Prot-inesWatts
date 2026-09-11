@@ -4,9 +4,9 @@ let endTimestamp = null, audioCtx = null;
 let sec = 0, active = false, inter = null, wakeLock = null;
 
 const configOeufs = {
-    coque:  { baseMin: 4.5 },
-    mollet: { baseMin: 6.5 },
-    dur:    { baseMin: 10.0 }
+    coque:  { baseMin: 6.5 },
+    mollet: { baseMin: 8.5 },
+    dur:    { baseMin: 12.0 }
 };
 
 const calibresOeufs = { S: 50, M: 60, L: 68, XL: 75 };
@@ -54,7 +54,7 @@ function calculer() {
         const calibre = document.getElementById('tailleOeuf').value;
         const nbOeufs = Math.round(quantite);
 
-        volEau = Math.min(1.2, 0.15 + (nbOeufs * 0.04));
+        volEau = Math.min(1.2, 0.15 + (nbOeufs * 0.1));
 
         let baseTime = configOeufs[typeCuisson].baseMin * 60;
         let pRef = 60;
@@ -67,7 +67,7 @@ function calculer() {
 
         whSaved = Math.round(180 + (nbOeufs * 5));
 
-        stepList.innerHTML += `<li>Mettre seulement <strong>${volEau.toFixed(2)}L d'eau</strong> au fond du récipient.</li>`;
+        stepList.innerHTML += `<li>Mettre seulement <strong>${volEau.toFixed(2)}L d'eau</strong> à fin de recouvrir les œuf(s).</li>`;
         stepList.innerHTML += `<li>Porter à ébullition rapide sous couvercle.</li>`;
         stepList.innerHTML += `<li>Plonger les ${nbOeufs} œuf(s) et maintenir le feu <strong>45 secondes</strong>.</li>`;
         stepList.innerHTML += `<li><strong>COUPEZ LE FEU</strong>, fermez avec un couvercle hermétique (cuisson étouffée/vapeur).</li>`;
