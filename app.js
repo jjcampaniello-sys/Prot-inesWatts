@@ -54,7 +54,7 @@ function calculer() {
         const calibre = document.getElementById('tailleOeuf').value;
         const nbOeufs = Math.round(quantite);
 
-        volEau = Math.min(1.2, 0.15 + (nbOeufs * 0.1));
+        volEau = Math.min(1.2, 0.15 + (nbOeufs * 0.08));
 
         let baseTime = configOeufs[typeCuisson].baseMin * 60;
         let pRef = 60;
