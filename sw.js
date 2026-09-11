@@ -1,4 +1,4 @@
-const CACHE_NAME = 'Prot-in-Watts-v6'; //
+const CACHE_NAME = 'Prot-in-Watts-v7'; //
 const ASSETS_TO_CACHE = [ //
   './', //
   './index.html', //
